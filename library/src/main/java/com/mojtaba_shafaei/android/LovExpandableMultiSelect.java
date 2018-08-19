@@ -7,12 +7,14 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,6 +51,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.BiFunction;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.BehaviorSubject;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -69,6 +72,7 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
   private ExpandableListView listView;
   private AppCompatTextView tvMessage;
   private ChipGroup chipGroup;
+  private View btnExpandChipGroup;
 
 
   private ListAdapter listAdapter;
@@ -93,7 +97,8 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
 
   ////////////////////////////    /////////////////////////////////////
   private final List<Item> _selectedItems = new ArrayList<>();
-  private final PublishRelay<List<Item>> selectedChipsSubject = PublishRelay.create();
+  private final BehaviorSubject<List<Item>> selectedChipsSubject = BehaviorSubject.create();
+  private boolean _isSingleLine = false;
 
   ////////////////////////////    /////////////////////////////////////
   public interface ItemModel {
@@ -270,7 +275,7 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
           }
         }
       }
-      selectedChipsSubject.accept(_selectedItems);
+      selectedChipsSubject.onNext(_selectedItems);
     });
 
     listView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
@@ -500,7 +505,6 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
             })
     );
 
-    selectedChipsSubject.accept(_selectedItems);
   }
 
   private String[] removeElementAt(String[] source, int index) {
@@ -545,6 +549,7 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
     listView = root.findViewById(R.id.list);
     tvMessage = root.findViewById(R.id.tv_message);
     chipGroup = root.findViewById(R.id.chipGroup);
+    btnExpandChipGroup = root.findViewById(R.id.btn_expandChipGroup);
     //</editor-fold>
     ViewCompat.setLayoutDirection(listView, ViewCompat.LAYOUT_DIRECTION_RTL);
     btnClearSearch.setVisibility(View.GONE);
@@ -574,7 +579,18 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
             }
           }
         });
+
+    btnExpandChipGroup.setOnClickListener(ignored -> {
+      if (_isSingleLine) {
+        chipGroup.setSingleLine(R.bool.chip_group_multi_line);
+      } else {
+        chipGroup.setSingleLine(R.bool.chip_group_single_line);
+      }
+      chipGroup.requestLayout();
+      _isSingleLine = !_isSingleLine;
+    });
   }
+
 
   @Override
   public void onResume() {
@@ -590,16 +606,22 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
 
         return false;
       });
+
+      selectedChipsSubject.onNext(_selectedItems);
     }
   }
 
   private void observeAdapter() {
-    if (listAdapter.getGroupCount() == 0) {
+    final int groupCount = listAdapter.getGroupCount();
+
+    if (groupCount == 0) {
       showError(new Exception("مقداری یافت نشد"));
     } else {
       hideErrors();
       try {
-        listView.expandGroup(0);
+        for (int i = 0; i < groupCount; i++) {
+          listView.expandGroup(i);
+        }
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -655,10 +677,15 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
     chip.setClickable(false);
     chip.setCloseIconEnabled(true);
     chip.setCloseIconTintResource(R.color.lov_multi_select_close_icon_tint);
+    chip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12.0f);
+    chip.setSingleLine(true);
+    chip.setCloseIconSize((chip.getCloseIconSize() * 1.2f));
+    chip.setChipStrokeWidth(4);
+    chip.setChipStrokeColor(ColorStateList.valueOf(0xFFD1D1D1));
     chipGroup.addView(chip);
     chip.setOnCloseIconClickListener(view -> {
       removeChip(item);
-      selectedChipsSubject.accept(_selectedItems);
+      selectedChipsSubject.onNext(_selectedItems);
       listAdapter.refreshAdapter();
     });
   }

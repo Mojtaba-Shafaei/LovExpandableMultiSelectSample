@@ -11,4 +11,5 @@
   <string name="lov_multi_select_cancel_dialog_title">انصراف ؟</string>
   <string name="lov_multi_select_no">خیر. خارج میشوم!</string>
   <string name="lov_multi_select_yes">بله</string>
+  <string name="lov_multi_select_single_or_multiple_line_tooltip">تغییر حالت نمایش موارد انتخاب شده</string>
 </resources>

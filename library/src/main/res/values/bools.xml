@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <bool name="lov_multi_select_shadow_visible">true</bool>
+  <bool name="chip_group_single_line">true</bool>
+  <bool name="chip_group_multi_line">false</bool>
 </resources>
