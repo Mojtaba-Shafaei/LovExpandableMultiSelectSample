@@ -104,9 +104,6 @@ public class Job implements LovExpandableMultiSelect.Item {
 
     Job job = (Job) o;
 
-    if (checked != job.checked) {
-      return false;
-    }
     if (cod != job.cod) {
       return false;
     }

@@ -510,6 +510,7 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
     tagView = root.findViewById(R.id.tag_group);
     tvMessage = root.findViewById(R.id.tv_message);
     //</editor-fold>
+    ViewCompat.setLayoutDirection(listView,ViewCompat.LAYOUT_DIRECTION_RTL);
     btnClearSearch.setVisibility(View.GONE);
     ViewCompat.setNestedScrollingEnabled(tagView, false);
 
@@ -564,6 +565,11 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
       showError(new Exception("مقداری یافت نشد"));
     } else {
       hideErrors();
+      try {
+        listView.expandGroup(0);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
   }
 
