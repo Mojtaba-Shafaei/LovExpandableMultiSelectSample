@@ -36,9 +36,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
-import co.lujun.androidtagview.TagContainerLayout;
-import co.lujun.androidtagview.TagView.OnTagClickListener;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.jakewharton.rxrelay2.PublishRelay;
 import com.mojtaba_shafaei.android.androidBottomDialog.BottomDialog;
 import com.mojtaba_shafaei.android.androidExpandableLovMultiSelect.R;
@@ -50,6 +50,7 @@ import io.reactivex.functions.BiFunction;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -66,8 +67,8 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
   private AppCompatImageButton btnBack;
   private MaterialButton btnOk;
   private ExpandableListView listView;
-  private TagContainerLayout tagView;
   private AppCompatTextView tvMessage;
+  private ChipGroup chipGroup;
 
 
   private ListAdapter listAdapter;
@@ -80,7 +81,6 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
   static Typeface sDefaultTypeface = null;
   private Property sProperties;
   private List<ItemModel> sItemModelList;
-  private List<Item> sDefaultItems = new ArrayList<>();
 
   private final String SPACE = String.valueOf(' ');
 
@@ -90,6 +90,10 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
   private OnResultListener mOnResultListener;
   private Dialog.OnCancelListener mOnCancelListener;
   private Dialog.OnDismissListener mOnDismissListener;
+
+  ////////////////////////////    /////////////////////////////////////
+  private final List<Item> _selectedItems = new ArrayList<>();
+  private final PublishRelay<List<Item>> selectedChipsSubject = PublishRelay.create();
 
   ////////////////////////////    /////////////////////////////////////
   public interface ItemModel {
@@ -147,7 +151,9 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
     dialog.sDefaultTypeface = typeface;
     dialog.sProperties = uiParams;
     dialog.sItemModelList = itemModelList;
-    dialog.sDefaultItems = selectedItems;
+    if (selectedItems != null) {
+      dialog._selectedItems.addAll(selectedItems);
+    }
     dialog.mOnCancelListener = onCancelListener;
     dialog.mOnDismissListener = onDismissListener;
     dialog.mOnResultListener = onResultListener;
@@ -175,7 +181,6 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
     if (sDefaultTypeface != null) {
       searchView.setTypeface(sDefaultTypeface);
       btnOk.setTypeface(sDefaultTypeface);
-      tagView.setTagTypeface(sDefaultTypeface);
     }
 
     if (sProperties != null) {
@@ -186,16 +191,6 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
 
       if (sProperties.getButtonOkTextColorState() != null) {
         btnOk.setTextColor(sProperties.getButtonOkTextColorState());
-      }
-
-      if (sProperties.getTagBackgroundColor() != null) {
-        tagView.setTagBackgroundColor(ContextCompat.getColor(getContext(),
-            sProperties.getTagBackgroundColor()));
-      }
-
-      if (sProperties.getTagBorderColor() != null) {
-        tagView.setTagBorderColor(ContextCompat.getColor(getContext(),
-            sProperties.getTagBorderColor()));
       }
     }
 
@@ -209,7 +204,7 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
       disposable.add(
           lceObservable
               .subscribeOn(Schedulers.io())
-              .zipWith(Observable.just(tagView.getTags())
+              .zipWith(Observable.just(getChipsTextList())
                       .subscribeOn(AndroidSchedulers.mainThread())
                       .observeOn(Schedulers.computation()),
                   (listLce, strings) -> {
@@ -258,50 +253,38 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
       );
     });
 
-    tagView.setOnTagClickListener(new OnTagClickListener() {
-      @Override
-      public void onTagClick(int position, String text) {
-
-      }
-
-      @Override
-      public void onTagLongClick(int position, String text) {
-      }
-
-      @Override
-      public void onTagCrossClick(int position) {
-        removeTagFromSelectedList(tagView.getTags().get(position));
-        listAdapter.refreshAdapter();
-        refreshSelectedCounter();
-      }
-    });
-
     listAdapter = new ListAdapter(getContext()
-        , () -> tagView.getTags()
+        , () -> _selectedItems
         , (ignored5, item, isChecked) -> {
+
+//      add Item to selected list on check change listener of list items.
       if (isChecked) {
-        addTag(item.getDes());
+        _selectedItems.add(item);
       } else {
-        removeTagFromSelectedList(item.getDes());
+//        remove Item on check change listener of list items.
+        for (Iterator<Item> iterator = _selectedItems.iterator(); iterator.hasNext(); ) {
+          Item item1 = iterator.next();
+          if (item1.getCod() == item.getCod()) {
+            iterator.remove();
+            break;
+          }
+        }
       }
+      selectedChipsSubject.accept(_selectedItems);
     });
 
     listView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
     listView.setAdapter(listAdapter);
 
-    try {
-      tagView.removeAllTags();
-      if (sDefaultItems != null) {
-        for (Item item : sDefaultItems) {
-          addTag(item.getDes());
-        }
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    refreshSelectedCounter();
     return view;
+  }
+
+  private List<String> getChipsTextList() {
+    List<String> strings = new ArrayList<>(_selectedItems.size());
+    for (Item item : _selectedItems) {
+      strings.add(item.getDes());
+    }
+    return strings;
   }
 
   @Override
@@ -326,6 +309,59 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
     };
 
     searchView.addTextChangedListener(textWatcher);
+
+    // observe selected chips (items)
+    disposable.add(
+        selectedChipsSubject.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .startWith(new ArrayList<Item>(0))
+            .subscribe(items -> {
+                  try {
+                    chipGroup.removeAllViews();
+                    if (items.size() != 0) {
+                      for (Item item : items) {
+                        addChip(item);
+                      }
+                    }
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                  }
+
+                  try {
+                    int count = items.size();
+                    if (sProperties.getMinLimit() != -1 && count < sProperties.getMinLimit()) {
+                      btnOk.setText(
+                          String.format(getString(R.string.lov_multi_select_choose_at_least_one),
+                              sProperties.getMinLimit())
+                      );
+                      btnOk.setEnabled(false);
+
+                    } else {
+                      if (sProperties.getMaxLimit() != -1 && count > sProperties.getMaxLimit()) {
+                        btnOk.setText(
+                            String.format(getString(R.string.lov_multi_select_choose_at_most),
+                                sProperties.getMaxLimit())
+                        );
+                        btnOk.setEnabled(false);
+                      } else {
+                        btnOk.setText(String
+                            .format(FA_LOCALE,
+                                getString(R.string.lov_multi_select_btn_ok_text),
+                                (sProperties != null && sProperties.getBtnOkText() != null)
+                                    ? sProperties
+                                    .getBtnOkText()
+                                    : getString(R.string.lov_multi_select_choose_it),
+                                count)
+                        );
+                        btnOk.setEnabled(true);
+                      }
+                    }
+                  } catch (Exception e) {
+                    Log.e(TAG, "refreshSelectedCounter: ", e);
+                  }
+                }
+                , throwable -> Log.e(TAG, "onError: ", throwable))
+    );
 
     disposable.add(
         subject.subscribeOn(Schedulers.io())
@@ -418,8 +454,6 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
                 return Observable.just(lce);
               }
             })
-//            .onErrorResumeNext(
-//                Observable.just(Lce.data(new ContentDataSetAndQueryText(new ArrayList<>(), ""))))
             .toFlowable(BackpressureStrategy.BUFFER)
             .toObservable()
             .observeOn(AndroidSchedulers.mainThread())
@@ -465,6 +499,8 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
               }
             })
     );
+
+    selectedChipsSubject.accept(_selectedItems);
   }
 
   private String[] removeElementAt(String[] source, int index) {
@@ -507,12 +543,11 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
     btnBack = root.findViewById(R.id.lov_multi_select_btn_back);
     btnOk = root.findViewById(R.id.lov_multi_select_btn_ok);
     listView = root.findViewById(R.id.list);
-    tagView = root.findViewById(R.id.tag_group);
     tvMessage = root.findViewById(R.id.tv_message);
+    chipGroup = root.findViewById(R.id.chipGroup);
     //</editor-fold>
-    ViewCompat.setLayoutDirection(listView,ViewCompat.LAYOUT_DIRECTION_RTL);
+    ViewCompat.setLayoutDirection(listView, ViewCompat.LAYOUT_DIRECTION_RTL);
     btnClearSearch.setVisibility(View.GONE);
-    ViewCompat.setNestedScrollingEnabled(tagView, false);
 
     if (getContext() != null) {
       btnClearSearch.setImageDrawable(
@@ -559,8 +594,6 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
   }
 
   private void observeAdapter() {
-    refreshSelectedCounter();
-
     if (listAdapter.getGroupCount() == 0) {
       showError(new Exception("مقداری یافت نشد"));
     } else {
@@ -571,21 +604,6 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
         e.printStackTrace();
       }
     }
-  }
-
-  private void removeTagFromSelectedList(String tag) {
-    List<String> tags = tagView.getTags();
-    if (tags != null) {
-      final int len = tags.size();
-      for (int i = 0; i < len; i++) {
-        if (tags.get(i).contentEquals(tag)) {
-          tags.remove(i);
-          break;
-        }
-      }
-      tagView.setTags(tags);
-    }
-    observeAdapter();
   }
 
   private void hideErrors() {
@@ -612,43 +630,37 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
     }
   }
 
-  private void addTag(String des) {
-    tagView.addTag(des, 0);
-    refreshSelectedCounter();
+  private void removeChip(Item item) {
+    for (Iterator<Item> iterator = _selectedItems.iterator(); iterator.hasNext(); ) {
+      Item item1 = iterator.next();
+      if (item1.getCod() == item.getCod()) {
+        iterator.remove();
+        break;
+      }
+    }
   }
 
-  private void refreshSelectedCounter() {
-    int count = tagView.getTags() != null ? tagView.getTags().size() : 0;
-    try {
-      if (sProperties.getMinLimit() != -1 && count < sProperties.getMinLimit()) {
-        btnOk.setText(
-            String.format(getString(R.string.lov_multi_select_choose_at_least_one),
-                sProperties.getMinLimit())
-        );
-        btnOk.setEnabled(false);
-
-      } else {
-        if (sProperties.getMaxLimit() != -1 && count > sProperties.getMaxLimit()) {
-          btnOk.setText(
-              String.format(getString(R.string.lov_multi_select_choose_at_most),
-                  sProperties.getMaxLimit())
-          );
-          btnOk.setEnabled(false);
-        } else {
-          btnOk.setText(String
-              .format(FA_LOCALE,
-                  getString(R.string.lov_multi_select_btn_ok_text),
-                  (sProperties != null && sProperties.getBtnOkText() != null) ? sProperties
-                      .getBtnOkText()
-                      : getString(R.string.lov_multi_select_choose_it),
-                  count)
-          );
-          btnOk.setEnabled(true);
-        }
-      }
-    } catch (Exception e) {
-      Log.e(TAG, "refreshSelectedCounter: ", e);
+  private void addChip(Item item) {
+    Chip chip = new Chip(getContext());
+    chip.setText(item.getDes());
+    if (sDefaultTypeface != null) {
+      chip.setTypeface(sDefaultTypeface);
     }
+
+    if (sProperties.getTagBackgroundColor() != null) {
+      chip.setChipBackgroundColorResource(sProperties.getTagBackgroundColor());
+    }
+
+    chip.setCheckable(false);
+    chip.setClickable(false);
+    chip.setCloseIconEnabled(true);
+    chip.setCloseIconTintResource(R.color.lov_multi_select_close_icon_tint);
+    chipGroup.addView(chip);
+    chip.setOnCloseIconClickListener(view -> {
+      removeChip(item);
+      selectedChipsSubject.accept(_selectedItems);
+      listAdapter.refreshAdapter();
+    });
   }
 
   private void showError(Throwable e) {
@@ -725,7 +737,6 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
     }
     sDefaultTypeface = null;
     sItemModelList = null;
-    sDefaultItems = null;
     sProperties = null;
     super.onDestroy();
   }

@@ -34,7 +34,6 @@ public final class Property {
     buttonOkBackgroundTint = builder.buttonOkBackgroundDrawable;
     buttonOkTextColorState = builder.buttonOkTextColorState;
     tagBackgroundColor = builder.tagBackgroundColor;
-    tagBorderColor = builder.tagBorderColor;
     btnOkText = builder.btnOkText;
     minLimit = builder.minLimit;
     maxLimit = builder.maxLimit;
@@ -57,10 +56,6 @@ public final class Property {
     return tagBackgroundColor;
   }
 
-  public Integer getTagBorderColor() {
-    return tagBorderColor;
-  }
-
   public String getBtnOkText() {
     return btnOkText;
   }
@@ -78,7 +73,6 @@ public final class Property {
     private ColorStateList buttonOkBackgroundDrawable;
     private ColorStateList buttonOkTextColorState;
     private Integer tagBackgroundColor;
-    private Integer tagBorderColor;
     private String btnOkText;
     private int minLimit = -1;
     private int maxLimit = -1;
@@ -98,11 +92,6 @@ public final class Property {
 
     public Builder withTagBackgroundColor(@ColorRes Integer tagBackgroundColor) {
       this.tagBackgroundColor = tagBackgroundColor;
-      return this;
-    }
-
-    public Builder withTagBorderColor(@ColorRes Integer tagBorderColor) {
-      this.tagBorderColor = tagBorderColor;
       return this;
     }
 

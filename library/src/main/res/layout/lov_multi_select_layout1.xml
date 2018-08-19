@@ -90,10 +90,11 @@
   <androidx.cardview.widget.CardView
     android:id="@+id/tag_container"
     android:layout_width="0dp"
-    android:layout_height="120dp"
-    app:cardBackgroundColor="#d1d1d1"
-    android:layout_marginRight="8dp"
+    android:layout_height="wrap_content"
     android:layout_marginLeft="8dp"
+    android:layout_marginRight="8dp"
+    android:minHeight="48dp"
+    app:contentPadding="4dp"
     app:cardElevation="0dp"
     app:cardPreventCornerOverlap="false"
     app:cardUseCompatPadding="true"
@@ -101,50 +102,21 @@
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toBottomOf="@id/toolbar">
 
-    <androidx.core.widget.NestedScrollView
+    <com.google.android.material.chip.ChipGroup
+      android:id="@+id/chipGroup"
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:fadeScrollbars="false"
-      android:scrollbarAlwaysDrawVerticalTrack="true"
-      android:scrollbarSize="2dp"
-      android:scrollbars="vertical"
-      android:verticalScrollbarPosition="left">
-
-      <co.lujun.androidtagview.TagContainerLayout
-        android:id="@+id/tag_group"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="visible"
-        app:container_background_color="#0FFF"
-        app:container_border_color="#FFF"
-        app:container_border_radius="0dp"
-        app:container_border_width="0dp"
-        app:container_enable_drag="false"
-        app:container_gravity="right"
-        app:horizontal_interval="3dp"
-        app:tag_background_color="@color/lov_multi_select_color_tag_background"
-        app:tag_border_color="#444"
-        app:tag_border_width="1dp"
-        app:tag_clickable="true"
-        app:tag_corner_radius="4dp"
-        app:tag_cross_color="@color/lov_multi_select_cross_color"
-        app:tag_cross_line_width="2dp"
-        app:tag_cross_width="24dp"
-        app:tag_enable_cross="true"
-        app:tag_ripple_color="#FFF"
-        app:tag_ripple_duration="0"
-        app:tag_text_color="#FFF"
-        app:tag_theme="none"
-        app:vertical_interval="4dp"/>
-    </androidx.core.widget.NestedScrollView>
+      android:layout_height="wrap_content"
+      app:chipSpacingHorizontal="3dp"
+      app:chipSpacingVertical="3dp"
+      />
   </androidx.cardview.widget.CardView>
 
   <FrameLayout
     android:layout_width="0dp"
     android:layout_height="0dp"
-    android:layout_marginRight="4dp"
-    android:layout_marginLeft="4dp"
     android:layout_marginTop="-8dp"
+    android:layout_marginLeft="4dp"
+    android:layout_marginRight="4dp"
     app:layout_constraintBottom_toTopOf="@id/lov_multi_select_btn_ok"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
@@ -153,8 +125,8 @@
       android:id="@+id/list"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:divider="#0FFF"
       android:childDivider="#0FFF"
+      android:divider="#0FFF"
       android:dividerHeight="0dp"/>
 
     <androidx.appcompat.widget.AppCompatTextView

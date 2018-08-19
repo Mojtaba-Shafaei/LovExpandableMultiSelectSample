@@ -37,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
                 .withButtonOkBackgroundTint(
                     ContextCompat.getColorStateList(this, R.color.colors_btn))
                 .withTagBackgroundColor(R.color.colorPrimary)
-                .withTagBorderColor(R.color.colorAccent)
                 .withBtnOkText("باشه")
                 .withMinLimit(1)
                 .withMaxLimit(3)

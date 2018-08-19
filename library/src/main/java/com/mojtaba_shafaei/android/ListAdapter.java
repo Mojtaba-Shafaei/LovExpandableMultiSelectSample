@@ -228,8 +228,8 @@ class ListAdapter extends BaseExpandableListAdapter {
 
     boolean checked = false;
     if (selectedTagsFetcher != null) {
-      for (String tag : selectedTagsFetcher.fetch()) {
-        if (tag.contentEquals(item.getDes())) {
+      for (Item tag : selectedTagsFetcher.fetch()) {
+        if (tag.getDes().contentEquals(item.getDes())) {
           checked = true;
           break;
         }
