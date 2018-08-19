@@ -1,19 +1,19 @@
 package com.mojtaba_shafaei.android;
 
-import com.mojtaba_shafaei.android.LovMultiSelect.Item;
+import com.mojtaba_shafaei.android.LovExpandableMultiSelect.ItemModel;
 import java.util.List;
 
 class Content {
 
-  private List<? extends Item> dataSet;
+  private List<ItemModel> dataSet;
   private List<String> selectedTags;
 
-  public Content(List<? extends Item> dataSet,List<String> selectedTags) {
+  public Content(List<ItemModel> dataSet, List<String> selectedTags) {
     this.dataSet = dataSet;
     this.selectedTags = selectedTags;
   }
 
-  public List<? extends Item> getDataSet() {
+  public List<ItemModel> getDataSet() {
     return dataSet;
   }
 

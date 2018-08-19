@@ -1,12 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.mojtaba_shafaei.android.library.androidLovMultiSelect">
+  package="com.mojtaba_shafaei.android.androidExpandableLovMultiSelect">
 
-  <application>
-    <activity
-      android:name="com.mojtaba_shafaei.android.LovMultiSelect"
-      android:screenOrientation="portrait"
-      android:configChanges="keyboard|orientation|screenSize"
-      android:theme="@style/lov_multi_select_AppTheme"
-      android:windowSoftInputMode="adjustResize|stateAlwaysHidden"/>
-  </application>
+  <application/>
 </manifest>

@@ -13,7 +13,7 @@ android {
         multiDexEnabled true
     }
 
-    resourcePrefix 'lov_multi_select_'
+    //resourcePrefix 'lov_multi_select_'
     publishNonDefault true
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8

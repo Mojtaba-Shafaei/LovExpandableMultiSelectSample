@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.mojtaba_shafaei.android.androidLovMultiSelectSample"
+        applicationId "com.mojtaba_shafaei.android.androidLovExpandableMultiSelectSample"
         minSdkVersion rootProject.ext.minSdk
         targetSdkVersion rootProject.ext.targetSdk
         versionCode rootProject.ext.versionCode
@@ -21,6 +21,7 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "androidx.appcompat:appcompat:$rootProject.ext.supportVersion"
+    implementation "com.google.android.material:material:$rootProject.ext.supportVersion"
     implementation 'androidx.constraintlayout:constraintlayout:1.1.2'
     implementation 'androidx.multidex:multidex:2.0.0'
     implementation 'org.parceler:parceler-api:1.1.11'

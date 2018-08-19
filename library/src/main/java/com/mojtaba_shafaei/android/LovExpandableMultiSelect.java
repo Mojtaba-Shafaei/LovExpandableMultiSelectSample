@@ -24,6 +24,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Checkable;
+import android.widget.ExpandableListView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDialogFragment;
@@ -35,14 +36,12 @@ import androidx.core.view.ViewCompat;
 import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import co.lujun.androidtagview.TagContainerLayout;
 import co.lujun.androidtagview.TagView.OnTagClickListener;
 import com.google.android.material.button.MaterialButton;
 import com.jakewharton.rxrelay2.PublishRelay;
 import com.mojtaba_shafaei.android.androidBottomDialog.BottomDialog;
-import com.mojtaba_shafaei.android.library.androidLovMultiSelect.R;
+import com.mojtaba_shafaei.android.androidExpandableLovMultiSelect.R;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -51,22 +50,22 @@ import io.reactivex.functions.BiFunction;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public class LovMultiSelect extends AppCompatDialogFragment {
+public class LovExpandableMultiSelect extends AppCompatDialogFragment {
 
-  private static final String TAG = "LovMultiSelect";
+  private static final String TAG = "LovExpandableMultiSelect";
 
   private ContentLoadingProgressBar progressBar;
   private AppCompatEditText searchView;
   private AppCompatImageButton btnClearSearch;
   private AppCompatImageButton btnBack;
   private MaterialButton btnOk;
-  private RecyclerView recyclerView;
+  private ExpandableListView listView;
   private TagContainerLayout tagView;
   private AppCompatTextView tvMessage;
 
@@ -80,12 +79,12 @@ public class LovMultiSelect extends AppCompatDialogFragment {
 
   static Typeface sDefaultTypeface = null;
   private Property sProperties;
-  private List<Item> sLoader;
+  private List<ItemModel> sItemModelList;
   private List<Item> sDefaultItems = new ArrayList<>();
 
   private final String SPACE = String.valueOf(' ');
 
-  private Observable<Lce<List<Item>>> lceObservable;
+  private Observable<Lce<List<ItemModel>>> lceObservable;
 
   ////////////////////////////    /////////////////////////////////////
   private OnResultListener mOnResultListener;
@@ -93,36 +92,62 @@ public class LovMultiSelect extends AppCompatDialogFragment {
   private Dialog.OnDismissListener mOnDismissListener;
 
   ////////////////////////////    /////////////////////////////////////
+  public interface ItemModel {
 
-  public interface Item extends Checkable {
+    int getCod();
 
-    String getCode();
-
-    String getDes();
+    void setCod(int cod);
 
     int getPriority();
 
-    void setCode(String code);
-
-    void setDes(String des);
-
     void setPriority(int priority);
+
+    String getDes();
+
+    void setDes(CharSequence des);
+
+    List<Item> getChildren();
+
+    void setChildren(List<Item> children);
+
+    void setDeleted(boolean deleted);
+
+    boolean isDeleted();
   }
 
-  public static LovMultiSelect start(FragmentManager fragmentManager,
+  public interface Item extends Checkable {
+
+    void setCod(int cod);
+
+    int getCod();
+
+    int getPriority();
+
+    void setPriority(int priority);
+
+    String getDes();
+
+    void setDes(CharSequence des);
+
+    void setDeleted(boolean deleted);
+
+    boolean isDeleted();
+  }
+
+  public static LovExpandableMultiSelect start(FragmentManager fragmentManager,
       Typeface typeface,
       Property uiParams,
-      List<Item> fetchDataListener,
-      List<Item> defaultItems,
+      List<ItemModel> itemModelList,
+      List<Item> selectedItems,
       OnResultListener onResultListener,
       Dialog.OnCancelListener onCancelListener,
       Dialog.OnDismissListener onDismissListener) {
 
-    LovMultiSelect dialog = new LovMultiSelect();
+    LovExpandableMultiSelect dialog = new LovExpandableMultiSelect();
     dialog.sDefaultTypeface = typeface;
     dialog.sProperties = uiParams;
-    dialog.sLoader = fetchDataListener;
-    dialog.sDefaultItems = defaultItems;
+    dialog.sItemModelList = itemModelList;
+    dialog.sDefaultItems = selectedItems;
     dialog.mOnCancelListener = onCancelListener;
     dialog.mOnDismissListener = onDismissListener;
     dialog.mOnResultListener = onResultListener;
@@ -178,7 +203,7 @@ public class LovMultiSelect extends AppCompatDialogFragment {
 
     btnClearSearch.setOnClickListener((ignored2) -> searchView.setText(""));
 
-    lceObservable = Observable.just(Lce.data(sLoader));
+    lceObservable = Observable.just(Lce.data(sItemModelList));
 
     btnOk.setOnClickListener((ignored3) -> {
       disposable.add(
@@ -201,15 +226,19 @@ public class LovMultiSelect extends AppCompatDialogFragment {
                   return Observable.<Lce<List<Item>>>just(Lce.error(lce.getError()));
                 } else {
                   if (lce.getData().getSelectedTags() != null) {
-                    List<Item> result = new ArrayList<>();
+                    final List<ItemModel> itemModels = lce.getData().getDataSet();
+                    Set<Item> result = new LinkedHashSet<>();
                     for (String tagDes : lce.getData().getSelectedTags()) {
-                      for (Item item : lce.getData().getDataSet()) {
-                        if (item.getDes().contentEquals(tagDes)) {
-                          result.add(item);
-                          break;
+                      for (ItemModel itemModel : itemModels) {
+                        for (Item item : itemModel.getChildren()) {
+                          if (item.getDes().contentEquals(tagDes)) {
+                            result.add(item);
+                            break;
+                          }
                         }
                       }
                     }
+
                     return Observable.just(Lce.data(result));
                   } else {
                     return Observable.<Lce<List<Item>>>just(Lce.error(new Exception("TET")));
@@ -223,7 +252,7 @@ public class LovMultiSelect extends AppCompatDialogFragment {
                 if (lce.hasError()) {
                   showError(lce.getError());
                 } else {
-                  onResult(lce.getData());
+                  onResult(new ArrayList<>(lce.getData()));
                 }
               })
       );
@@ -257,11 +286,8 @@ public class LovMultiSelect extends AppCompatDialogFragment {
       }
     });
 
-    listAdapter.setHasStableIds(true);
-
-    recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-    recyclerView.setAdapter(listAdapter);
-    recyclerView.setHasFixedSize(true);
+    listView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+    listView.setAdapter(listAdapter);
 
     try {
       tagView.removeAllTags();
@@ -323,8 +349,8 @@ public class LovMultiSelect extends AppCompatDialogFragment {
             .observeOn(Schedulers.computation())
             .switchMap(query ->
                 Observable.just(query.toLowerCase())
-                    .zipWith(lceObservable,
-                        (BiFunction<String, Lce<List<Item>>, Lce<ContentDataSetAndQueryText>>) (query1, listLce) -> {
+                    .zipWith(Observable.just(Lce.data(sItemModelList)),
+                        (BiFunction<String, Lce<List<ItemModel>>, Lce<ContentDataSetAndQueryText>>) (query1, listLce) -> {
                           if (listLce.hasError()) {
                             return Lce.error(listLce.getError());
                           } else {
@@ -335,47 +361,59 @@ public class LovMultiSelect extends AppCompatDialogFragment {
                         })
                     .startWith(Lce.<ContentDataSetAndQueryText>loading()))
             .switchMap(lce -> {
-              if (!lce.hasError() && !lce.isLoading() && lce.getData().getQuery().length() > 0) {
-                final String fQuery = lce.getData().getQuery();
-                String[] queries = fQuery.split(SPACE);
-                //remove space and 1 char length parts
-                final List<String> ss = new ArrayList<>(Arrays.asList(queries));
-                for (Iterator<String> iterator = ss.iterator(); iterator.hasNext(); ) {
-                  if (iterator.next().length() <= 1) {
-                    iterator.remove();
+              if (!lce.hasError() && !lce.isLoading()) {
+                final List<ItemModel> itemModelList = lce.getData().getList();
+
+                if (lce.getData().getQuery().length() == 0) {
+                  for (ItemModel itemModel : itemModelList) {
+                    itemModel.setDeleted(false);
+                    for (Item item : itemModel.getChildren()) {
+                      item.setDeleted(false);
+                    }
                   }
-                }
-                queries = new String[ss.size()];
-                ss.toArray(queries);
-                //
-                final List<Item> results = new ArrayList<>();
-                int priority;
-                for (Item item : lce.getData().getList()) {
-                  priority = Integer.MAX_VALUE;
-                  for (String k : queries) {
-                    if (k.length() > 1) {
-                      if (item.getDes().toLowerCase().contains(k.toLowerCase())) {
-                        priority--;
-                      }
+                } else {
+                  final String fQuery = lce.getData().getQuery().replaceAll("\\s+", " ");
+                  String[] queries = fQuery.split(SPACE);
+                  for (int i = queries.length - 1; i >= 0; i--) {
+                    if (queries[i].length() <= 1) {
+                      queries = removeElementAt(queries, i);
                     }
                   }
 
-                  if (item.getDes().contentEquals(fQuery)) {
-                    priority--;
-                  }
+                  for (ItemModel itemModel : itemModelList) {
+                    int priority = getPriorityOf(itemModel.getDes(), fQuery, queries);
+                    if (priority == Integer.MAX_VALUE) {
+                      List<Item> children = itemModel.getChildren();
+                      for (Item item : children) {
+                        int itemPriority = getPriorityOf(item.getDes(), fQuery, queries);
+                        if (itemPriority == Integer.MAX_VALUE) {
+                          item.setDeleted(true);
+                        } else {
+                          item.setDeleted(false);
+                          item.setPriority(priority);
+                        }
+                      }
 
-                  if (item.getDes().toLowerCase().startsWith(fQuery)) {
-                    priority--;
-                  }
-
-                  item.setPriority(priority);
-                  //Add item if it is desired one.
-                  if (priority != Integer.MAX_VALUE) {
-                    results.add(item);
+                      int _count = 0;
+                      for (Item item : itemModel.getChildren()) {
+                        if (!item.isDeleted()) {
+                          _count++;
+                        }
+                      }
+                      if (_count == 0) {
+                        itemModel.setDeleted(true);
+                      } else {
+                        itemModel.setDeleted(false);
+                      }
+                    } else {
+                      itemModel.setDeleted(false);
+                      itemModel.setPriority(priority);
+                    }
                   }
                 }
-                lce.getData().setItems(results);
-                return Observable.just(lce);
+
+                return Observable.just(Lce.data(
+                    new ContentDataSetAndQueryText(itemModelList, lce.getData().getQuery())));
               } else {
                 return Observable.just(lce);
               }
@@ -404,10 +442,7 @@ public class LovMultiSelect extends AppCompatDialogFragment {
                   showContentLoading(false);
                   if (lce.getData() != null) {
                     listAdapter.setData(lce.getData().getList());
-                    if (recyclerView.getLayoutManager() != null) {
-                      recyclerView.getLayoutManager().scrollToPosition(0);
-                    }
-                    refreshSelectedCounter();
+                    observeAdapter();
                   } else {
                     showInternetError();
                   }
@@ -432,6 +467,38 @@ public class LovMultiSelect extends AppCompatDialogFragment {
     );
   }
 
+  private String[] removeElementAt(String[] source, int index) {
+    String[] result = new String[source.length - 1];
+    int ii = 0;
+    for (int i = 0; i < source.length; i++) {
+      if (i != index) {
+        result[ii] = source[i];
+      }
+      ii++;
+    }
+    return result;
+  }
+
+  private int getPriorityOf(String des, String fQuery, String[] queries) {
+    int priority = Integer.MAX_VALUE;
+    for (String k : queries) {
+      if (k.length() > 1) {
+        if (des.toLowerCase().contains(k.toLowerCase())) {
+          priority--;
+        }
+      }
+    }
+
+    if (des.contentEquals(fQuery)) {
+      priority--;
+    }
+
+    if (des.toLowerCase().startsWith(fQuery)) {
+      priority--;
+    }
+    return priority;
+  }
+
   private void initUi(View root) {
     //<editor-fold desc="Ui Binding">
     progressBar = root.findViewById(R.id.progressBar);
@@ -439,7 +506,7 @@ public class LovMultiSelect extends AppCompatDialogFragment {
     btnClearSearch = root.findViewById(R.id.lov_multi_select_btn_clear_search);
     btnBack = root.findViewById(R.id.lov_multi_select_btn_back);
     btnOk = root.findViewById(R.id.lov_multi_select_btn_ok);
-    recyclerView = root.findViewById(R.id.list);
+    listView = root.findViewById(R.id.list);
     tagView = root.findViewById(R.id.tag_group);
     tvMessage = root.findViewById(R.id.tv_message);
     //</editor-fold>
@@ -493,7 +560,7 @@ public class LovMultiSelect extends AppCompatDialogFragment {
   private void observeAdapter() {
     refreshSelectedCounter();
 
-    if (listAdapter.getItemCount() == 0) {
+    if (listAdapter.getGroupCount() == 0) {
       showError(new Exception("مقداری یافت نشد"));
     } else {
       hideErrors();
@@ -651,7 +718,7 @@ public class LovMultiSelect extends AppCompatDialogFragment {
       textWatcher = null;
     }
     sDefaultTypeface = null;
-    sLoader = null;
+    sItemModelList = null;
     sDefaultItems = null;
     sProperties = null;
     super.onDestroy();
@@ -694,7 +761,7 @@ public class LovMultiSelect extends AppCompatDialogFragment {
         .withNegativeBackground(R.drawable.bottom_dialog_button_background_transparent)
         .withDefaultTypeface(sDefaultTypeface)
         .withOnNegative(bottomDialog -> {
-          onCancel(LovMultiSelect.this.getDialog());
+          onCancel(LovExpandableMultiSelect.this.getDialog());
           hideSoftKeyboard(searchView);
 
           btnBack.getViewTreeObserver()

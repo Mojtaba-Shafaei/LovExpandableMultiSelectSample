@@ -1,4 +1,4 @@
-package com.mojtaba_shafaei.android.library;
+package com.mojtaba_shafaei.android.app;
 
 import androidx.multidex.MultiDex;
 import androidx.multidex.MultiDexApplication;

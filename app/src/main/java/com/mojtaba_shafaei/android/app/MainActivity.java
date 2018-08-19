@@ -1,13 +1,14 @@
-package com.mojtaba_shafaei.android.library;
+package com.mojtaba_shafaei.android.app;
 
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import com.mojtaba_shafaei.android.LovMultiSelect;
-import com.mojtaba_shafaei.android.LovMultiSelect.Item;
+import com.mojtaba_shafaei.android.LovExpandableMultiSelect;
+import com.mojtaba_shafaei.android.LovExpandableMultiSelect.Item;
 import com.mojtaba_shafaei.android.Property;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,15 +21,17 @@ public class MainActivity extends AppCompatActivity {
     setContentView(R.layout.activity_main);
 
     List<Job> defaults = new ArrayList<>();
-    defaults.add(new Job("1", "یک"));
-    defaults.add(new Job("5", "پنجمین آیتم از لیست موجود این میباشد"));
-    defaults.add(new Job("9", "NINE"));
-    defaults.add(new Job("14", "FOURTEEN"));
+    defaults.add(new Job(1, "یک"));
+    defaults.add(new Job(5, "پنجمین آیتم از لیست موجود این میباشد"));
+    defaults.add(new Job(9, "NINE"));
+    defaults.add(new Job(14, "FOURTEEN"));
 
     Typeface typeface = Typeface.createFromAsset(getAssets(), "IRANSansMobile.ttf");
 
-    findViewById(R.id.btn_call_lov).setOnClickListener(
-        view -> LovMultiSelect.start(getSupportFragmentManager()
+    View btn = findViewById(R.id.btn_call_lov);
+
+    btn.setOnClickListener(
+        ignored -> LovExpandableMultiSelect.start(getSupportFragmentManager()
             , typeface
             , Property.newBuilder()
                 .withButtonOkBackgroundTint(
@@ -39,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
                 .withMinLimit(1)
                 .withMaxLimit(3)
                 .build(),
-            new JobFetcher().fetch(),
+            new ArrayList<>(new JobFetcher().fetch()),
             new ArrayList<>(defaults),
             items -> {
               String result = "";
