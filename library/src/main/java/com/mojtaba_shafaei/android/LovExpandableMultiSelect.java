@@ -265,6 +265,10 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
 //      add Item to selected list on check change listener of list items.
       if (isChecked) {
         _selectedItems.add(item);
+        // immediately return selected value if min and max of selected items are 1.
+        if (sProperties.getMinLimit() == 1 && sProperties.getMaxLimit() == 1) {
+          onResult(_selectedItems);
+        }
       } else {
 //        remove Item on check change listener of list items.
         for (Iterator<Item> iterator = _selectedItems.iterator(); iterator.hasNext(); ) {
