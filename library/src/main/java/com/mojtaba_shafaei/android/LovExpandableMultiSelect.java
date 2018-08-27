@@ -316,7 +316,14 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
 
       }
     };
-
+    searchView.setImeOptions(EditorInfo.IME_ACTION_SEARCH | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+    searchView.setOnEditorActionListener((v, actionId, event) -> {
+      if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+        subject.accept(v.getText().toString());
+        return true;
+      }
+      return false;
+    });
     searchView.addTextChangedListener(textWatcher);
 
     // observe selected chips (items)
