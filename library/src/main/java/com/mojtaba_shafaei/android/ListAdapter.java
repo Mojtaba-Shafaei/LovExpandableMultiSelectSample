@@ -123,7 +123,7 @@ class ListAdapter extends BaseExpandableListAdapter {
   @Override
   public int getChildrenCount(int i) {
     int _count = 0;
-    for (Item item : data.get(i).getChildren()) {
+    for (Item item : ((ItemModel)getGroup(i)).getChildren()) {
       if (!item.isDeleted()) {
         _count++;
       }
