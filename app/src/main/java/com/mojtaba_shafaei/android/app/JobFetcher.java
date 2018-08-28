@@ -57,7 +57,7 @@ public class JobFetcher {
     {
       final JobGroup jobGroup = new JobGroup();
       jobGroup.setCod(22);
-      jobGroup.setDes("ردیف 2");
+      jobGroup.setDes("ردیف هیچی 2");
       final ArrayList<Job> jobs = new ArrayList<>();
       jobs.add(new Job(1, "یک"));
       jobs.add(new Job(2, "دو"));

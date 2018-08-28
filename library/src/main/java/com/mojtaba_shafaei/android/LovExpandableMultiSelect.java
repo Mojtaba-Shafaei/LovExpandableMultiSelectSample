@@ -436,30 +436,39 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
                     }
                   }
 
+                  //reset ALL deleted flags to false.
                   for (ItemModel itemModel : itemModelList) {
-                    int priority = getPriorityOf(itemModel.getDes(), fQuery, queries);
+                    itemModel.setDeleted(false);
+                    for (Item item : itemModel.getChildren()) {
+                      item.setDeleted(false);
+                    }
+                  }
+
+                  // filter results
+                  boolean isThereInChildren;
+                  int priority;
+                  int itemPriority;
+                  for (ItemModel itemModel : itemModelList) {
+                    priority = getPriorityOf(itemModel.getDes(), fQuery, queries);
                     if (priority == Integer.MAX_VALUE) {
                       List<Item> children = itemModel.getChildren();
+                      isThereInChildren = false;
                       for (Item item : children) {
-                        int itemPriority = getPriorityOf(item.getDes(), fQuery, queries);
+                        itemPriority = getPriorityOf(item.getDes(), fQuery, queries);
                         if (itemPriority == Integer.MAX_VALUE) {
                           item.setDeleted(true);
                         } else {
                           item.setDeleted(false);
                           item.setPriority(priority);
+
+                          isThereInChildren = true;
                         }
                       }
 
-                      int _count = 0;
-                      for (Item item : itemModel.getChildren()) {
-                        if (!item.isDeleted()) {
-                          _count++;
-                        }
-                      }
-                      if (_count == 0) {
-                        itemModel.setDeleted(true);
-                      } else {
+                      if (isThereInChildren) {
                         itemModel.setDeleted(false);
+                      } else {
+                        itemModel.setDeleted(true);
                       }
                     } else {
                       itemModel.setDeleted(false);
