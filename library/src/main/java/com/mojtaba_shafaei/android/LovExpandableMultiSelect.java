@@ -405,7 +405,20 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
             .observeOn(Schedulers.computation())
             .switchMap(query ->
                 Observable.just(query.toLowerCase())
-                    .zipWith(Observable.just(Lce.data(sItemModelList)),
+                    .subscribeOn(Schedulers.io())
+                    .zipWith(Observable.just(Lce.data(sItemModelList))
+                            .map(lce -> {
+                              //reset ALL deleted flags to false.
+                              for (ItemModel itemModel : lce.getData()) {
+                                itemModel.setDeleted(false);
+                                itemModel.setPriority(0);
+                                for (Item item : itemModel.getChildren()) {
+                                  item.setDeleted(false);
+                                  item.setPriority(0);
+                                }
+                              }
+                              return lce;
+                            }),
                         (BiFunction<String, Lce<List<ItemModel>>, Lce<ContentDataSetAndQueryText>>) (query1, listLce) -> {
                           if (listLce.hasError()) {
                             return Lce.error(listLce.getError());
@@ -420,27 +433,12 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
               if (!lce.hasError() && !lce.isLoading()) {
                 final List<ItemModel> itemModelList = lce.getData().getList();
 
-                if (lce.getData().getQuery().length() == 0) {
-                  for (ItemModel itemModel : itemModelList) {
-                    itemModel.setDeleted(false);
-                    for (Item item : itemModel.getChildren()) {
-                      item.setDeleted(false);
-                    }
-                  }
-                } else {
+                if (lce.getData().getQuery().length() != 0) {
                   final String fQuery = lce.getData().getQuery().replaceAll("\\s+", " ");
                   String[] queries = fQuery.split(SPACE);
                   for (int i = queries.length - 1; i >= 0; i--) {
                     if (queries[i].length() <= 1) {
                       queries = removeElementAt(queries, i);
-                    }
-                  }
-
-                  //reset ALL deleted flags to false.
-                  for (ItemModel itemModel : itemModelList) {
-                    itemModel.setDeleted(false);
-                    for (Item item : itemModel.getChildren()) {
-                      item.setDeleted(false);
                     }
                   }
 
