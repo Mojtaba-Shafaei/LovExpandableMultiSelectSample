@@ -1,7 +1,6 @@
 package com.mojtaba_shafaei.android;
 
 import android.content.res.ColorStateList;
-import androidx.annotation.ColorRes;
 import androidx.annotation.IntRange;
 
 /**
@@ -9,17 +8,19 @@ import androidx.annotation.IntRange;
  */
 public final class Property {
 
-  private ColorStateList buttonOkTextColorState;
-
-  private android.content.res.ColorStateList buttonOkBackgroundTint = null;
-
-  @ColorRes
-  private Integer tagBackgroundColor = null;
-
-  @ColorRes
-  private Integer tagBorderColor = null;
-
   private String btnOkText = "";
+  private ColorStateList buttonOkTextColorState = null;
+  private ColorStateList buttonOkBackgroundTint = null;
+
+  private ColorStateList chipBackgroundColor = null;
+  private Integer chipStrokeWidth = null;
+  private ColorStateList chipStrokeColor = null;
+  private ColorStateList chipTextColor = null;
+  private Integer chipTextSize = null;
+  private ColorStateList closeIconTintColor = null;
+
+
+  private ColorStateList categoryTextColor = null;
 
   @IntRange(from = -1)
   private int minLimit;
@@ -31,10 +32,16 @@ public final class Property {
   }
 
   private Property(Builder builder) {
-    buttonOkBackgroundTint = builder.buttonOkBackgroundDrawable;
-    buttonOkTextColorState = builder.buttonOkTextColorState;
-    tagBackgroundColor = builder.tagBackgroundColor;
     btnOkText = builder.btnOkText;
+    buttonOkTextColorState = builder.buttonOkTextColorState;
+    buttonOkBackgroundTint = builder.buttonOkBackgroundTint;
+    chipBackgroundColor = builder.chipBackgroundColor;
+    chipStrokeWidth = builder.chipStrokeWidth;
+    chipStrokeColor = builder.chipStrokeColor;
+    chipTextColor = builder.chipTextColor;
+    chipTextSize = builder.chipTextSize;
+    closeIconTintColor = builder.closeIconTintColor;
+    categoryTextColor = builder.categoryTextColor;
     minLimit = builder.minLimit;
     maxLimit = builder.maxLimit;
   }
@@ -43,21 +50,42 @@ public final class Property {
     return new Builder();
   }
 
-  public ColorStateList getButtonOkBackgroundTint() {
-    return buttonOkBackgroundTint;
+  ////////////////////////////    /////////////////////////////////////
+
+  public String getBtnOkText() {
+    return btnOkText;
   }
 
   public ColorStateList getButtonOkTextColorState() {
     return buttonOkTextColorState;
   }
 
-  @ColorRes
-  public Integer getTagBackgroundColor() {
-    return tagBackgroundColor;
+  public ColorStateList getButtonOkBackgroundTint() {
+    return buttonOkBackgroundTint;
   }
 
-  public String getBtnOkText() {
-    return btnOkText;
+  public ColorStateList getChipBackgroundColor() {
+    return chipBackgroundColor;
+  }
+
+  public Integer getChipStrokeWidth() {
+    return chipStrokeWidth;
+  }
+
+  public ColorStateList getChipStrokeColor() {
+    return chipStrokeColor;
+  }
+
+  public ColorStateList getChipTextColor() {
+    return chipTextColor;
+  }
+
+  public Integer getChipTextSize() {
+    return chipTextSize;
+  }
+
+  public ColorStateList getCloseIconTintColor() {
+    return closeIconTintColor;
   }
 
   public int getMinLimit() {
@@ -68,54 +96,84 @@ public final class Property {
     return maxLimit;
   }
 
+  public ColorStateList getCategoryTextColor() {
+    return categoryTextColor;
+  }
+
   public static final class Builder {
 
-    private ColorStateList buttonOkBackgroundDrawable;
-    private ColorStateList buttonOkTextColorState;
-    private Integer tagBackgroundColor;
     private String btnOkText;
-    private int minLimit = -1;
-    private int maxLimit = -1;
+    private ColorStateList buttonOkTextColorState;
+    private ColorStateList buttonOkBackgroundTint;
+    private ColorStateList chipBackgroundColor;
+    private Integer chipStrokeWidth;
+    private ColorStateList chipStrokeColor;
+    private ColorStateList chipTextColor;
+    private Integer chipTextSize;
+    private ColorStateList closeIconTintColor;
+    private ColorStateList categoryTextColor;
+    private int minLimit;
+    private int maxLimit;
 
     private Builder() {
     }
 
-    public Builder withButtonOkBackgroundTint(ColorStateList tint) {
-      this.buttonOkBackgroundDrawable = tint;
+    public Builder withBtnOkText(String btnOkText) {
+      this.btnOkText = btnOkText;
       return this;
     }
 
-    public Builder withButtonOkTextColor(ColorStateList tint) {
-      this.buttonOkTextColorState = tint;
+    public Builder withButtonOkTextColorState(ColorStateList buttonOkTextColorState) {
+      this.buttonOkTextColorState = buttonOkTextColorState;
       return this;
     }
 
-    public Builder withTagBackgroundColor(@ColorRes Integer tagBackgroundColor) {
-      this.tagBackgroundColor = tagBackgroundColor;
+    public Builder withButtonOkBackgroundTint(ColorStateList buttonOkBackgroundTint) {
+      this.buttonOkBackgroundTint = buttonOkBackgroundTint;
       return this;
     }
 
-    public Builder withBtnOkText(String text) {
-      this.btnOkText = text;
+    public Builder withChipBackgroundColor(ColorStateList chipBackgroundColor) {
+      this.chipBackgroundColor = chipBackgroundColor;
       return this;
     }
 
-    /**
-     * @param minLimit from -1 to .... <br/> -1 is default, and wont control minimum of selected
-     * items.In other word -1 make LOV Optional.
-     * @return {@link Builder} instance
-     */
-    public Builder withMinLimit(@IntRange(from = -1) int minLimit) {
+    public Builder withChipStrokeWidth(Integer chipStrokeWidth) {
+      this.chipStrokeWidth = chipStrokeWidth;
+      return this;
+    }
+
+    public Builder withChipStrokeColor(ColorStateList chipStrokeColor) {
+      this.chipStrokeColor = chipStrokeColor;
+      return this;
+    }
+
+    public Builder withChipTextColor(ColorStateList chipTextColor) {
+      this.chipTextColor = chipTextColor;
+      return this;
+    }
+
+    public Builder withChipTextSize(Integer chipTextSize) {
+      this.chipTextSize = chipTextSize;
+      return this;
+    }
+
+    public Builder withCloseIconTintColor(ColorStateList closeIconTintColor) {
+      this.closeIconTintColor = closeIconTintColor;
+      return this;
+    }
+
+    public Builder withCategoryTextColor(ColorStateList categoryTextColor) {
+      this.categoryTextColor = categoryTextColor;
+      return this;
+    }
+
+    public Builder withMinLimit(int minLimit) {
       this.minLimit = minLimit;
       return this;
     }
 
-    /**
-     * @param maxLimit from -1 to .... <br/> -1 is default, and wont control
-     * <strong>maximum</strong> of selected items.
-     * @return {@link Builder} instance
-     */
-    public Builder withMaxLimit(@IntRange(from = -1) int maxLimit) {
+    public Builder withMaxLimit(int maxLimit) {
       this.maxLimit = maxLimit;
       return this;
     }
@@ -124,4 +182,8 @@ public final class Property {
       return new Property(this);
     }
   }
+
+  ////////////////////////////    /////////////////////////////////////
+
+
 }

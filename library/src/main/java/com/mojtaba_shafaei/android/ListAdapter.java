@@ -1,6 +1,7 @@
 package com.mojtaba_shafaei.android;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,13 +28,17 @@ class ListAdapter extends BaseExpandableListAdapter {
   private final SelectedTagsFetcher selectedTagsFetcher;
   private final Collator vCollator = Collator.getInstance(new Locale("fa"));
 
+  private ColorStateList categoryTextColor = null;
+
   public ListAdapter(Context context
+      , ColorStateList categoryTextColor
       , @Nullable SelectedTagsFetcher selectedTagsFetcher
       , OnCheckedChangeListener onCheckedChangeListener) {
 
     inflater = LayoutInflater.from(context);
     this.onCheckedChangeListener = onCheckedChangeListener;
     this.selectedTagsFetcher = selectedTagsFetcher;
+    this.categoryTextColor = categoryTextColor;
   }
 
   public void setData(List<ItemModel> data) {
@@ -55,59 +60,9 @@ class ListAdapter extends BaseExpandableListAdapter {
     notifyDataSetChanged();
   }
 
-  /*public List<Item> getSelectedItems() {
-    List<Item> items = new LinkedList<>();
-    for (Item i : data) {
-      if (i.isChecked()) {
-        items.add(i);
-      }
-    }
-    return items;
-  }*/
-
   public void refreshAdapter() {
     notifyDataSetChanged();
   }
-
- /* public void chooseItem(Item item) {
-    int position = -1;
-    int len = data.size();
-    for (int i = 0; i < len; i++) {
-      if (data.get(i).getDes().equals(item.getDes())) {
-        position = i;
-        break;
-      }
-    }
-
-    item.setChecked(true);
-    data.set(position, item);
-    notifyDataSetChanged();
-  }
-*/
-  /*public void chooseItems(List<? extends Item> selectedItems) {
-    if (selectedItems == null || selectedItems.size() == 0) {
-      return;
-    }
-
-    int len = data.size();
-    for (int i = 0; i < len; i++) {
-      Item item0 = data.get(i);
-      item0.setChecked(false);
-      data.set(i, item0);
-    }
-
-    for (int i = 0; i < len; i++) {
-      Item item0 = data.get(i);
-
-      for (Item item : selectedItems) {
-        if (item0.getDes().equals(item.getDes())) {
-          item0.setChecked(true);
-          data.set(i, item0);
-        }
-      }
-    }
-    notifyDataSetChanged();
-  }*/
 
   @Override
   public int getGroupCount() {
@@ -123,7 +78,7 @@ class ListAdapter extends BaseExpandableListAdapter {
   @Override
   public int getChildrenCount(int i) {
     int _count = 0;
-    for (Item item : ((ItemModel)getGroup(i)).getChildren()) {
+    for (Item item : ((ItemModel) getGroup(i)).getChildren()) {
       if (!item.isDeleted()) {
         _count++;
       }
@@ -213,8 +168,12 @@ class ListAdapter extends BaseExpandableListAdapter {
     des.setText(itemModel.getDes());
     ////////////////////////////////
 
-    if (LovExpandableMultiSelect.sDefaultTypeface != null) {
-      des.setTypeface(LovExpandableMultiSelect.sDefaultTypeface);
+    if (LovExpandableMultiSelect.sCategoryTypeface != null) {
+      des.setTypeface(LovExpandableMultiSelect.sCategoryTypeface);
+    }
+
+    if (categoryTextColor != null) {
+      des.setTextColor(categoryTextColor);
     }
 
     return view;

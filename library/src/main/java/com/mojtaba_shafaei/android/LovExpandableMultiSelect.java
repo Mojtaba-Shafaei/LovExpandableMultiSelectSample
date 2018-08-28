@@ -83,6 +83,7 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
   private final Locale FA_LOCALE = new Locale("fa");
 
   static Typeface sDefaultTypeface = null;
+  static Typeface sCategoryTypeface = null;
   private Property sProperties;
   private List<ItemModel> sItemModelList;
 
@@ -145,6 +146,7 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
 
   public static LovExpandableMultiSelect start(FragmentManager fragmentManager,
       Typeface typeface,
+      Typeface categoryTypeface,
       Property uiParams,
       List<ItemModel> itemModelList,
       List<Item> selectedItems,
@@ -153,6 +155,7 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
       Dialog.OnDismissListener onDismissListener) {
 
     LovExpandableMultiSelect dialog = new LovExpandableMultiSelect();
+    dialog.sCategoryTypeface = categoryTypeface;
     dialog.sDefaultTypeface = typeface;
     dialog.sProperties = uiParams;
     dialog.sItemModelList = itemModelList;
@@ -259,6 +262,7 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
     });
 
     listAdapter = new ListAdapter(getContext()
+        , sProperties.getCategoryTextColor()
         , () -> _selectedItems
         , (ignored5, item, isChecked) -> {
 
@@ -680,19 +684,49 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
       chip.setTypeface(sDefaultTypeface);
     }
 
-    if (sProperties.getTagBackgroundColor() != null) {
-      chip.setChipBackgroundColorResource(sProperties.getTagBackgroundColor());
-    }
-
     chip.setCheckable(false);
     chip.setClickable(false);
-    chip.setCloseIconEnabled(true);
-    chip.setCloseIconTintResource(R.color.lov_multi_select_close_icon_tint);
-    chip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12.0f);
+    chip.setCloseIconVisible(true);
+
+    if (sProperties.getCloseIconTintColor() != null) {
+      chip.setCloseIconTint(sProperties.getCloseIconTintColor());
+    }
+
+    if (sProperties.getChipBackgroundColor() != null) {
+      chip.setChipBackgroundColor(sProperties.getChipBackgroundColor());
+    }
+
+    if (sProperties.getChipTextSize() != null) {
+      chip.setTextSize(TypedValue.COMPLEX_UNIT_PX, sProperties.getChipTextSize());
+    } else {
+      chip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14.0f);
+    }
+
+    if (sProperties.getChipTextColor() != null) {
+      chip.setTextColor(sProperties.getChipTextColor());
+    }
+
+    chip.setCloseIconSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP
+        , 24
+        , getResources().getDisplayMetrics())
+    );
+
+    if (sProperties.getChipStrokeWidth() != null) {
+      chip.setChipStrokeWidth(sProperties.getChipStrokeWidth());
+    } else {
+      chip.setChipStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP
+          , 2
+          , getResources().getDisplayMetrics())
+      );
+    }
+
+    if (sProperties.getChipStrokeColor() != null) {
+      chip.setChipStrokeColor(sProperties.getChipStrokeColor());
+    } else {
+      chip.setChipStrokeColor(ColorStateList.valueOf(0xFFD1D1D1));
+    }
+
     chip.setSingleLine(true);
-    chip.setCloseIconSize((chip.getCloseIconSize() * 1.2f));
-    chip.setChipStrokeWidth(4);
-    chip.setChipStrokeColor(ColorStateList.valueOf(0xFFD1D1D1));
     chipGroup.addView(chip);
     chip.setOnCloseIconClickListener(view -> {
       removeChip(item);

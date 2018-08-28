@@ -1,5 +1,6 @@
 package com.mojtaba_shafaei.android.app;
 
+import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,17 +34,26 @@ public class MainActivity extends AppCompatActivity {
     btn.setOnClickListener(
         ignored -> LovExpandableMultiSelect.start(getSupportFragmentManager()
             , typeface
+            , typeface
             , Property.newBuilder()
+                .withBtnOkText("باشه")
+                .withButtonOkTextColorState(ColorStateList.valueOf(0xFFFFFFFF))
                 .withButtonOkBackgroundTint(
                     ContextCompat.getColorStateList(this, R.color.colors_btn))
-               // .withTagBackgroundColor(R.color.colorPrimary)
-                .withBtnOkText("باشه")
+                .withChipBackgroundColor(ColorStateList.valueOf(0xFF673695))
+                .withChipStrokeWidth(2)
+                .withChipStrokeColor(ColorStateList.valueOf(0xFFD1D1D1))
+                .withChipTextColor(ColorStateList.valueOf(0xFFFFFFFF))
+                .withChipTextSize(24)
+                .withCloseIconTintColor(ColorStateList.valueOf(0xFFFFFFFF))
                 .withMinLimit(1)
                 .withMaxLimit(3)
-                .build(),
-            new ArrayList<>(new JobFetcher().fetch()),
-            new ArrayList<>(defaults),
-            items -> {
+                .withCategoryTextColor(ColorStateList.valueOf(0xFF673695))
+                .build()
+
+            , new ArrayList<>(new JobFetcher().fetch())
+            , new ArrayList<>(defaults)
+            , items -> {
               String result = "";
               for (Item dd : items) {
                 Log.d("MainActivity", "onActivityResult: " + dd);
