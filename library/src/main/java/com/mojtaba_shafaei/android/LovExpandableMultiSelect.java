@@ -62,7 +62,7 @@ import java.util.concurrent.TimeUnit;
 
 public class LovExpandableMultiSelect extends AppCompatDialogFragment {
 
-  private static final String TAG = "LovExpandableMultiSelect";
+  private static final String TAG = "LovMultiSelect";
 
   private ContentLoadingProgressBar progressBar;
   private AppCompatEditText searchView;
@@ -72,7 +72,7 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
   private ExpandableListView listView;
   private AppCompatTextView tvMessage;
   private ChipGroup chipGroup;
-  private View btnExpandChipGroup;
+  private AppCompatImageButton btnExpandChipGroup;
 
 
   private ListAdapter listAdapter;
@@ -575,9 +575,16 @@ public class LovExpandableMultiSelect extends AppCompatDialogFragment {
               .getDrawable(getContext(), R.drawable.lov_multi_select_ic_clear_light_theme));
       btnBack.setImageDrawable(
           ContextCompat.getDrawable(getContext(), R.drawable.lov_multi_select_ic_back_dark));
+
+      btnExpandChipGroup.setImageDrawable(
+          ContextCompat.getDrawable(getContext(),
+              R.drawable.lov_multi_select_ic_format_line_spacing_grey_900_24dp));
     }
     ViewCompat.setLayoutDirection(root, ViewCompat.LAYOUT_DIRECTION_RTL);
 
+    if (sProperties.getMinLimit() == 1 && sProperties.getMaxLimit() == 1) {
+      btnExpandChipGroup.setVisibility(View.GONE);
+    }
     searchView.setImeOptions(EditorInfo.IME_ACTION_SEARCH | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
 
     btnBack.getViewTreeObserver()

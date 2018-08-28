@@ -76,7 +76,7 @@
         android:layout_marginLeft="4dp"
         android:background="@drawable/lov_multi_select_background_oval_dark_borderless"
         android:scaleType="center"
-        android:src="@drawable/lov_multi_select_ic_format_line_spacing_light_blue_700_24dp"
+        tools:src="@drawable/lov_multi_select_ic_format_line_spacing_grey_900_24dp"
         android:tooltipText="@string/lov_multi_select_single_or_multiple_line_tooltip"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
