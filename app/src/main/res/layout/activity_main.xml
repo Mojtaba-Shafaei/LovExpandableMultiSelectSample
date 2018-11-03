@@ -6,7 +6,7 @@
   android:orientation="vertical"
   tools:context=".MainActivity">
 
-  <com.google.android.material.button.MaterialButton
+  <android.support.design.button.MaterialButton
     android:id="@+id/btn_call_lov"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"

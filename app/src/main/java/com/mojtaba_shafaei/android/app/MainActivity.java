@@ -3,18 +3,18 @@ package com.mojtaba_shafaei.android.app;
 import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import com.mojtaba_shafaei.android.LovExpandableMultiSelect;
 import com.mojtaba_shafaei.android.LovExpandableMultiSelect.Item;
 import com.mojtaba_shafaei.android.Property;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
